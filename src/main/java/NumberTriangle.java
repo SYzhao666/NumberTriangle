@@ -1,4 +1,6 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is the provided NumberTriangle class to be used in this coding task.
@@ -88,8 +90,18 @@ public class NumberTriangle {
      *
      */
     public int retrieve(String path) {
-        // TODO implement this method
-        return -1;
+        // implement this method
+        if (path.isEmpty()) {
+            return this.root;
+        }
+        char direction = path.charAt(0);
+        String rest = path.substring(1);
+        if (direction == 'l' && left != null) {
+            return left.retrieve(rest);
+        } else if (direction == 'r' && right != null) {
+            return right.retrieve(rest);
+        }
+        throw new IllegalArgumentException("Invalid path: " + path);
     }
 
     /** Read in the NumberTriangle structure from a file.
@@ -109,9 +121,8 @@ public class NumberTriangle {
         InputStream inputStream = NumberTriangle.class.getClassLoader().getResourceAsStream(fname);
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
-
-        // TODO define any variables that you want to use to store things
-
+        // define any variables that you want to use to store things
+        List<List<NumberTriangle>> levels = new ArrayList<>();
         // will need to return the top of the NumberTriangle,
         // so might want a variable for that.
         NumberTriangle top = null;
@@ -122,12 +133,34 @@ public class NumberTriangle {
             // remove when done; this line is included so running starter code prints the contents of the file
             System.out.println(line);
 
-            // TODO process the line
+            // process the line
+            String[] nums = line.trim().split("\\s+");
+            List<NumberTriangle> row = new ArrayList<>();
+            for (String n : nums) {
+                row.add(new NumberTriangle(Integer.parseInt(n)));
+            }
+            levels.add(row);
 
             //read the next line
             line = br.readLine();
         }
         br.close();
+
+        // === 补充：建立父子关系 ===
+        for (int i = 0; i < levels.size() - 1; i++) {
+            List<NumberTriangle> current = levels.get(i);
+            List<NumberTriangle> next = levels.get(i + 1);
+            for (int j = 0; j < current.size(); j++) {
+                current.get(j).setLeft(next.get(j));
+                current.get(j).setRight(next.get(j + 1));
+            }
+        }
+
+        // === 补充：设置顶点 ===
+        if (!levels.isEmpty()) {
+            top = levels.get(0).get(0);
+        }
+
         return top;
     }
 
